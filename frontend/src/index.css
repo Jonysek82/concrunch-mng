@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+/* Barvy jako CSS proměnné – světlé a tmavé téma se přepíná třídou .dark na <html> */
+:root {
+  --bg: #f6f4fa;
+  --surface: #ffffff;
+  --border: #dedaea;
+  --text: #1b1626;
+  --muted: #6d6780;
+  --accent: #e8b13a;
+  --on-accent: #1b1626;
+}
+.dark {
+  --bg: #14111a;
+  --surface: #1e1a26;
+  --border: #34303f;
+  --text: #f5f3fa;
+  --muted: #9a94ab;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-on-accent: var(--on-accent);
+  --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
