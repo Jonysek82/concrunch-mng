@@ -188,7 +188,7 @@ The following tools are required to run the project locally:
 ## Cloning the Repository
 
 ```bash
-git clone
+git clone https://github.com/Jonysek82/concrunch-mng.git
 cd concrunch-mng
 ```
 
@@ -212,7 +212,7 @@ npm run dev
 The development server is normally available at:
 
 ```text
-
+http://localhost:5173
 ```
 
 ---
@@ -240,18 +240,18 @@ based on:
 backend/.env.example
 ```
 
-Example basic configuration:
+Example local configuration:
 
 ```env
 PORT=5000
 MONGODB_URI=mongodb://127.0.0.1:27017/concrunch_manager
-CLIENT_URL=
+CLIENT_URL=http://localhost:5173
 NODE_ENV=development
 ```
 
 Additional environment variables will be added as new features are implemented.
 
-> Real passwords, API keys, tokens, and other sensitive information must not be committed to the Git repository.
+> Real passwords, API keys, tokens, secrets, and other sensitive information must not be committed to the Git repository.
 
 ### Running the Backend
 
@@ -262,7 +262,13 @@ npm run dev
 The backend is normally available at:
 
 ```text
+http://localhost:5000
+```
 
+The REST API is available under:
+
+```text
+http://localhost:5000/api
 ```
 
 ---
@@ -271,17 +277,48 @@ The backend is normally available at:
 
 The backend uses MongoDB through the Mongoose library.
 
-For local development, MongoDB can be used, for example, at:
+For local development, MongoDB is expected to be available at:
 
 ```text
 mongodb://127.0.0.1:27017
 ```
 
-The application's database connection is defined using the following environment variable:
+The application uses the following local database:
+
+```text
+concrunch_manager
+```
+
+The database connection is configured through the environment variable:
 
 ```env
-MONGODB_URI=
+MONGODB_URI=mongodb://127.0.0.1:27017/concrunch_manager
 ```
+
+---
+
+## Environment Configuration
+
+The local `.env` files are not part of the repository.
+
+Environment configuration should be created from the provided `.env.example` files where available.
+
+Example backend configuration:
+
+```env
+PORT=5000
+MONGODB_URI=mongodb://127.0.0.1:27017/concrunch_manager
+CLIENT_URL=http://localhost:5173
+NODE_ENV=development
+```
+
+The frontend communicates with the backend API using:
+
+```env
+VITE_API_URL=http://localhost:5000/api
+```
+
+Sensitive values such as passwords, API keys, authentication secrets, and access tokens must never be committed to the repository.
 
 ---
 
@@ -297,7 +334,7 @@ main
 
 represents the shared stable version of the project.
 
-For further development, we use working branches in the following format:
+For further development, working branches use the following format:
 
 ```text
 firstname.lastname/area
@@ -332,6 +369,8 @@ For example:
 git switch -c john.smith/performers
 ```
 
+Each branch should represent a logically related area of development. Multiple related tasks can be implemented within the same branch.
+
 ---
 
 ## Commit Convention
@@ -342,7 +381,7 @@ Commit messages use the following prefixes:
 |---|---|
 | `feat:` | new feature |
 | `fix:` | bug fix |
-| `docs:` | documentation |
+| `docs:` | documentation changes |
 | `style:` | styling or formatting changes |
 | `refactor:` | code restructuring without changing functionality |
 | `chore:` | technical maintenance and dependency changes |
@@ -358,23 +397,31 @@ refactor: simplify API routes
 chore: update dependencies
 ```
 
+Changes should be committed in logical units with short and meaningful commit messages.
+
 ---
 
 ## Pushing a Working Branch
 
-For the first push:
+For the first push of a new branch:
 
 ```bash
 git push -u origin firstname.lastname/area
 ```
 
-For subsequent changes:
+For example:
+
+```bash
+git push -u origin john.smith/performers
+```
+
+Subsequent changes can be pushed using:
 
 ```bash
 git push
 ```
 
-Once a complete area of work is finished, the working branch is merged into `main`.
+Once a complete area of work is finished, the working branch can be merged into `main`.
 
 ---
 
