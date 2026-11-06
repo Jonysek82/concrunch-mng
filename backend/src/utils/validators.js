@@ -101,6 +101,10 @@ const updateUserRules = [
   body('active').optional().isBoolean().withMessage('Aktivní musí být boolean')
 ];
 
+const googleLoginRules = [
+  body('credential').isString().notEmpty().withMessage('Google token je povinný')
+];
+
 module.exports = {
   handleValidation,
   isValidObjectId,
@@ -117,5 +121,6 @@ module.exports = {
   tagRules,
   updateTagRules,
   userRules,
-  updateUserRules
+  updateUserRules,
+  googleLoginRules
 };
