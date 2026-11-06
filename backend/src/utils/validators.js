@@ -1,4 +1,4 @@
-const { body, param, validationResult } = require('express-validator');
+const { body, param, query, validationResult } = require('express-validator');
 
 const handleValidation = (req, res, next) => {
   const errors = validationResult(req);
@@ -101,6 +101,23 @@ const updateUserRules = [
   body('active').optional().isBoolean().withMessage('Aktivní musí být boolean')
 ];
 
+const organizerRequestRules = [
+  body('message').optional().isString().isLength({ max: 500 }).withMessage('Zpráva může mít nejvýše 500 znaků')
+];
+
+const organizerDecisionRules = [
+  body('decision').isIn(['approved','rejected']).withMessage('Rozhodnutí musí být approved nebo rejected'),
+  body('rejectionReason').optional().isString().isLength({ max: 500 }).withMessage('Důvod zamítnutí může mít nejvýše 500 znaků')
+];
+
+const organizerRequestListRules = [
+  query('status').optional().isIn(['pending','approved','rejected']).withMessage('Neplatný stav žádosti')
+];
+
+const googleLoginRules = [
+  body('credential').isString().notEmpty().withMessage('Google token je povinný')
+];
+
 module.exports = {
   handleValidation,
   isValidObjectId,
@@ -117,5 +134,9 @@ module.exports = {
   tagRules,
   updateTagRules,
   userRules,
-  updateUserRules
+  updateUserRules,
+  googleLoginRules,
+  organizerRequestRules,
+  organizerDecisionRules,
+  organizerRequestListRules
 };
