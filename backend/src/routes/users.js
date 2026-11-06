@@ -2,9 +2,16 @@ const express = require('express');
 const { listUsers, createUser, updateUser, updateUserRole, updateUserStatus } = require('../controllers/userController');
 const authMiddleware = require('../middleware/authMiddleware');
 const roleMiddleware = require('../middleware/roleMiddleware');
-const { handleValidation, objectIdParam, userRules, updateUserRules } = require('../utils/validators');
+const { createOrganizerRequest, getMyOrganizerRequest, listOrganizerRequests, decideOrganizerRequest } = require('../controllers/organizerRequestController');
+const { handleValidation, objectIdParam, userRules, updateUserRules, organizerRequestRules, organizerDecisionRules, organizerRequestListRules } = require('../utils/validators');
 const { body } = require('express-validator');
 const router = express.Router();
+
+// Schválení organizátora
+router.post('/me/organizer-request', authMiddleware, organizerRequestRules, handleValidation, createOrganizerRequest);
+router.get('/me/organizer-request', authMiddleware, getMyOrganizerRequest);
+router.get('/organizer-requests', authMiddleware, roleMiddleware(['admin']), organizerRequestListRules, handleValidation, listOrganizerRequests);
+router.patch('/:id/organizer-request', authMiddleware, roleMiddleware(['admin']), [objectIdParam('id', 'uživatele'), ...organizerDecisionRules], handleValidation, decideOrganizerRequest);
 
 router.get('/', authMiddleware, roleMiddleware(['admin']), listUsers);
 router.post('/', authMiddleware, roleMiddleware(['admin']), userRules, handleValidation, createUser);
