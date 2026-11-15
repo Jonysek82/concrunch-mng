@@ -1,4 +1,5 @@
 const { body, param, query, validationResult } = require('express-validator');
+const { ROLE_LIST } = require('./roles');
 
 const handleValidation = (req, res, next) => {
   const errors = validationResult(req);
@@ -91,13 +92,13 @@ const updateTagRules = [
 const userRules = [
   body('username').trim().isLength({ min: 3 }).withMessage('Uživatelské jméno musí mít alespoň 3 znaky'),
   body('password').isLength({ min: 8 }).withMessage('Heslo musí mít alespoň 8 znaků'),
-  body('role').optional().isIn(['visitor','organizer','admin']).withMessage('Neplatná role')
+  body('role').optional().isIn(ROLE_LIST).withMessage('Neplatná role')
 ];
 
 const updateUserRules = [
   body('username').optional().trim().isLength({ min: 3 }).withMessage('Uživatelské jméno musí mít alespoň 3 znaky'),
   body('password').optional().isLength({ min: 8 }).withMessage('Heslo musí mít alespoň 8 znaků'),
-  body('role').optional().isIn(['visitor','organizer','admin']).withMessage('Neplatná role'),
+  body('role').optional().isIn(ROLE_LIST).withMessage('Neplatná role'),
   body('active').optional().isBoolean().withMessage('Aktivní musí být boolean')
 ];
 
