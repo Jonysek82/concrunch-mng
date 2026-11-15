@@ -1,5 +1,7 @@
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
+import { useAuth } from '@/features/auth/AuthContext';
+import { displayName } from '@/lib/user';
 
 const links = [
   { to: '/admin/program', label: 'Program' },
@@ -9,15 +11,22 @@ const links = [
 ];
 
 export function AdminLayout() {
+  const { user, logout, hasRole } = useAuth();
+  const navigate = useNavigate();
+
+  const allLinks = hasRole('admin')
+    ? [...links, { to: '/admin/organizatori', label: 'Organizátoři' }]
+    : links;
+
   return (
     <div className="min-h-dvh bg-bg text-text">
       <header className="border-b border-border">
-        <div className="mx-auto flex max-w-5xl items-center gap-6 px-4 py-3">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
           <span className="text-sm font-extrabold tracking-widest text-accent">
             CONCRUNCH MANAGER
           </span>
           <nav className="flex gap-4 text-sm">
-            {links.map((l) => (
+            {allLinks.map((l) => (
               <NavLink
                 key={l.to}
                 to={l.to}
@@ -29,8 +38,18 @@ export function AdminLayout() {
               </NavLink>
             ))}
           </nav>
-          {/* TODO: odhlášení */}
-          <button className="ml-auto text-sm text-muted hover:text-text">Odhlásit se</button>
+          <div className="ml-auto flex items-center gap-3 text-sm text-muted">
+            <span>{user ? displayName(user) : ''}</span>
+            <button
+              className="hover:text-text"
+              onClick={() => {
+                logout();
+                navigate('/program');
+              }}
+            >
+              Odhlásit se
+            </button>
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-5xl px-4 py-6">
