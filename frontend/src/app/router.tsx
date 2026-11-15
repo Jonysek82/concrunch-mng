@@ -3,10 +3,20 @@ import { AppShell } from '@/components/layout/AppShell';
 import { ProgramPage } from '@/features/program/ProgramPage';
 import { CatalogPage } from '@/features/catalog/CatalogPage';
 import { NewsPage } from '@/features/news/NewsPage';
+import { LoginPage } from '@/features/auth/LoginPage';
+import { AccountPage } from '@/features/auth/AccountPage';
+import { RequireAuth } from '@/features/auth/RequireAuth';
 import { AdminLayout } from '@/features/admin/AdminLayout';
-import { RequireAuth } from '@/features/admin/RequireAuth';
-import { AdminLoginPage } from '@/features/admin/AdminLoginPage';
-import { AdminListPage } from '@/features/admin/AdminListPage';
+import { OrganizerApprovalsPage } from '@/features/admin/OrganizerApprovalsPage';
+import { EventFormPage } from '@/features/admin/events/EventFormPage';
+import { PerformerFormPage } from '@/features/admin/performers/PerformerFormPage';
+import {
+  AdminMerchantsPage,
+  AdminNewsPage,
+  AdminPerformersPage,
+  AdminProgramPage,
+} from '@/features/admin/AdminPages';
+import { NewsFormPage } from '@/features/news/NewsFormPage';
 
 export const router = createBrowserRouter([
   // Veřejná část pro návštěvníky
@@ -17,63 +27,41 @@ export const router = createBrowserRouter([
       { path: 'program', element: <ProgramPage /> },
       { path: 'novinky', element: <NewsPage /> },
       { path: 'katalog', element: <CatalogPage /> },
+      { path: 'prihlaseni', element: <LoginPage /> },
+      // Účet – stačí být přihlášen (libovolná role)
+      { element: <RequireAuth />, children: [{ path: 'ucet', element: <AccountPage /> }] },
     ],
   },
 
-  // Administrace pro organizátory
-  { path: 'admin/login', element: <AdminLoginPage /> },
+  // Administrace – organizátor nebo správce
   {
-    path: 'admin',
-    element: <RequireAuth />,
-    children: [
-      {
-        element: <AdminLayout />,
-        children: [
-          { index: true, element: <Navigate to="/admin/program" replace /> },
-          {
-            path: 'program',
-            element: (
-              <AdminListPage
-                title="Program"
-                addLabel="Přidat bod programu"
-                columns={['Čas', 'Název', 'Místo', 'Účinkující']}
-              />
-            ),
-          },
-          {
-            path: 'ucinkujici',
-            element: (
-              <AdminListPage
-                title="Účinkující"
-                addLabel="Přidat účinkujícího"
-                columns={['Jméno', 'Popis']}
-              />
-            ),
-          },
-          {
-            path: 'mista',
-            element: (
-              <AdminListPage
-                title="Místa"
-                addLabel="Přidat místo"
-                columns={['Název', 'Popis', 'Patro']}
-              />
-            ),
-          },
-          {
-            path: 'novinky',
-            element: (
-              <AdminListPage
-                title="Novinky"
-                addLabel="Přidat novinku"
-                columns={['Nadpis', 'Publikováno']}
-              />
-            ),
-          },
-        ],
-      },
-    ],
-  },
+  path: 'admin',
+  element: <RequireAuth roles={['organizer', 'admin']} />,
+  children: [
+    {
+      element: <AdminLayout />,
+      children: [
+        { index: true, element: <Navigate to="/admin/program" replace /> },
+        { path: 'program', element: <AdminProgramPage /> },
+        { path: 'program/novy', element: <EventFormPage /> },
+        { path: 'program/:id', element: <EventFormPage /> },
+        { path: 'ucinkujici', element: <AdminPerformersPage /> },
+        { path: 'ucinkujici/novy', element: <PerformerFormPage /> },
+        { path: 'ucinkujici/:id', element: <PerformerFormPage /> },
+        { path: 'mista', element: <AdminMerchantsPage /> },
+        { path: 'mista/novy', element: <PerformerFormPage /> },
+        { path: 'mista/:id', element: <PerformerFormPage /> },
+        { path: 'novinky', element: <AdminNewsPage /> },
+        { path: 'novinky/novy', element: <NewsFormPage /> },
+        { path: 'novinky/:id', element: <NewsFormPage /> },
+        {
+          element: <RequireAuth roles={['admin']} />,
+          children: [{ path: 'organizatori', element: <OrganizerApprovalsPage /> }],
+        },
+      ],
+    },
+  ],
+},
 
   { path: '*', element: <Navigate to="/program" replace /> },
 ]);

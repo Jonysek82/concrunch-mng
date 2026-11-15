@@ -9,7 +9,7 @@ export default defineConfig({
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },
   server: {
-    // proxy na backend – upravit podle skutečného API
-    proxy: { '/api': { target: 'http://localhost:8000', changeOrigin: true } },
+    // použije se, když VITE_API_URL=/api (bez absolutní adresy); backend běží na portu 5000
+    proxy: { '/api': { target: 'http://localhost:5000', changeOrigin: true } },
   },
 });
