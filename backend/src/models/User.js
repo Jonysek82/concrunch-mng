@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { ROLES, ROLE_LIST } = require('../utils/roles');
 
 // Žádost uživatele o roli organizátora a její vyřízení adminem.
 const organizerRequestSchema = new mongoose.Schema({
@@ -19,7 +20,7 @@ const userSchema = new mongoose.Schema({
   avatarUrl: { type: String, default: '' },
   googleId: { type: String, unique: true, sparse: true },
   authProvider: { type: String, enum: ['local','google'], default: 'local' },
-  role: { type: String, enum: ['visitor','organizer','admin'], default: 'visitor' },
+  role: { type: String, enum: ROLE_LIST, default: ROLES.VISITOR },
   active: { type: Boolean, default: true },
   organizerRequest: { type: organizerRequestSchema, default: () => ({}) }
 }, { timestamps: true });

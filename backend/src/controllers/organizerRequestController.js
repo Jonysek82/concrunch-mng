@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const { isValidObjectId } = require('../utils/validators');
+const { ROLES } = require('../utils/roles');
 
 const toRequestResponse = (user) => ({
   id: user._id,
@@ -13,7 +14,7 @@ const createOrganizerRequest = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: 'Uživatel nebyl nalezen' });
-    if (user.role !== 'visitor') return res.status(409).json({ message: 'O roli organizátora může požádat jen návštěvník' });
+    if (user.role !== ROLES.VISITOR) return res.status(409).json({ message: 'O roli organizátora může požádat jen návštěvník' });
     if (user.organizerRequest && user.organizerRequest.status === 'pending') {
       return res.status(409).json({ message: 'Žádost již čeká na schválení' });
     }
@@ -71,7 +72,7 @@ const decideOrganizerRequest = async (req, res, next) => {
     user.organizerRequest.decidedAt = new Date();
     user.organizerRequest.decidedBy = req.user._id;
     user.organizerRequest.rejectionReason = decision === 'rejected' ? rejectionReason : '';
-    if (decision === 'approved') user.role = 'organizer';
+    if (decision === 'approved') user.role = ROLES.ORGANIZER;
     await user.save();
     res.json(toRequestResponse(user));
   } catch (err) {
