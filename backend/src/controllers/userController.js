@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { isValidObjectId } = require('../utils/validators');
+const { ROLES, isValidRole } = require('../utils/roles');
 
 const listUsers = async (req, res, next) => {
   try {
@@ -13,7 +14,7 @@ const listUsers = async (req, res, next) => {
 
 const createUser = async (req, res, next) => {
   try {
-    const { username, password, role = 'organizer', active = true } = req.body;
+    const { username, password, role = ROLES.ORGANIZER, active = true } = req.body;
     if (!username || !password) return res.status(400).json({ message: 'Uživatelské jméno a heslo jsou povinné' });
     if (password.length < 8) return res.status(400).json({ message: 'Heslo musí mít alespoň 8 znaků' });
     const existing = await User.findOne({ username });
@@ -47,7 +48,7 @@ const updateUserRole = async (req, res, next) => {
     const { id } = req.params;
     const { role } = req.body;
     if (!isValidObjectId(id)) return res.status(400).json({ message: 'Neplatné ID uživatele' });
-    if (!['visitor','organizer','admin'].includes(role)) return res.status(400).json({ message: 'Neplatná role' });
+    if (!isValidRole(role)) return res.status(400).json({ message: 'Neplatná role' });
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ message: 'Uživatel nebyl nalezen' });
     user.role = role;
