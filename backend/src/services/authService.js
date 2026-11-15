@@ -3,7 +3,7 @@ const bcrypt = require('bcryptjs');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 
-const ROLES = ['visitor', 'organizer', 'admin'];
+const { ROLES, isValidRole } = require('../utils/roles');
 
 const googleClient = new OAuth2Client();
 
@@ -21,8 +21,8 @@ const getAdminEmails = () =>
     .filter(Boolean);
 
 const getDefaultRole = () => {
-  const role = (process.env.GOOGLE_DEFAULT_ROLE || 'visitor').trim();
-  return ROLES.includes(role) ? role : 'visitor';
+  const role = (process.env.GOOGLE_DEFAULT_ROLE || ROLES.VISITOR).trim();
+  return isValidRole(role) ? role : ROLES.VISITOR;
 };
 
 const isAdminEmail = (email) => getAdminEmails().includes((email || '').toLowerCase());
@@ -83,7 +83,7 @@ const loginWithGoogle = async (idToken) => {
       avatarUrl: profile.picture || '',
       googleId: profile.sub,
       authProvider: 'google',
-      role: isAdminEmail(email) ? 'admin' : getDefaultRole()
+      role: isAdminEmail(email) ? ROLES.ADMIN : getDefaultRole()
     });
   } else {
     if (!user.active) throw new AuthError(401, 'User is inactive');
@@ -92,7 +92,7 @@ const loginWithGoogle = async (idToken) => {
     user.name = profile.name || user.name;
     user.avatarUrl = profile.picture || user.avatarUrl;
     // E-maily ze seznamu ADMIN_EMAILS jsou vždy admin. Ostatním zůstává role, kterou mají.
-    if (isAdminEmail(email)) user.role = 'admin';
+    if (isAdminEmail(email)) user.role = ROLES.ADMIN;
   }
 
   await user.save();
