@@ -1,0 +1,89 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  gateway:
+    build: .
+    command: ["node", "gateway/src/server.js"]
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      NODE_ENV: production
+      GATEWAY_PORT: 5000
+      IDENTITY_SERVICE_URL: http://identity:5001
+      FESTIVAL_SERVICE_URL: http://festival:5002
+      AUDIT_SERVICE_URL: http://audit:5003
+    depends_on:
+      identity:
+        condition: service_started
+      festival:
+        condition: service_started
+      audit:
+        condition: service_started
+
+  identity:
+    build: .
+    command: ["node", "services/identity-service/src/server.js"]
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      IDENTITY_PORT: 5001
+      IDENTITY_MONGODB_URI: mongodb://mongo:27017/concrunch_identity
+      AUDIT_SERVICE_URL: http://audit:5003
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET in backend/.env}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-8h}
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:?Set INTERNAL_SERVICE_TOKEN in backend/.env}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_DEFAULT_ROLE: ${GOOGLE_DEFAULT_ROLE:-visitor}
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-}
+      SEED_ADMIN_USERNAME: ${SEED_ADMIN_USERNAME:-admin}
+    depends_on:
+      mongo:
+        condition: service_healthy
+      audit:
+        condition: service_started
+
+  festival:
+    build: .
+    command: ["node", "services/festival-service/src/server.js"]
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      FESTIVAL_PORT: 5002
+      FESTIVAL_MONGODB_URI: mongodb://mongo:27017/concrunch_festival
+      IDENTITY_SERVICE_URL: http://identity:5001
+      AUDIT_SERVICE_URL: http://audit:5003
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:?Set INTERNAL_SERVICE_TOKEN in backend/.env}
+    depends_on:
+      mongo:
+        condition: service_healthy
+      identity:
+        condition: service_started
+      audit:
+        condition: service_started
+
+  audit:
+    build: .
+    command: ["node", "services/audit-service/src/server.js"]
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      AUDIT_PORT: 5003
+      AUDIT_MONGODB_URI: mongodb://mongo:27017/concrunch_audit
+      IDENTITY_SERVICE_URL: http://identity:5001
+      INTERNAL_SERVICE_TOKEN: ${INTERNAL_SERVICE_TOKEN:?Set INTERNAL_SERVICE_TOKEN in backend/.env}
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+volumes:
+  mongo_data:

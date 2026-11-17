@@ -1,11 +1,24 @@
 {
   "name": "concrunch-backend",
   "version": "0.1.0",
-  "main": "src/server.js",
+  "main": "gateway/src/server.js",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
-    "dev": "node src/server.js",
-    "start": "node src/server.js",
-    "seed": "node seed.js"
+    "dev": "node scripts/dev.js",
+    "dev:gateway": "node gateway/src/server.js",
+    "dev:identity": "node services/identity-service/src/server.js",
+    "dev:festival": "node services/festival-service/src/server.js",
+    "dev:audit": "node services/audit-service/src/server.js",
+    "start": "node gateway/src/server.js",
+    "start:gateway": "node gateway/src/server.js",
+    "start:identity": "node services/identity-service/src/server.js",
+    "start:festival": "node services/festival-service/src/server.js",
+    "start:audit": "node services/audit-service/src/server.js",
+    "test": "node --test",
+    "seed": "node seed.js",
+    "migrate:legacy": "node scripts/migrate-legacy.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
