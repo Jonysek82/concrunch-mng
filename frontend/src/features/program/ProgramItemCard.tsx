@@ -1,11 +1,11 @@
+import { Link } from 'react-router-dom';
 import { MapPin } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Avatar } from '@/components/ui/Avatar';
 import type { ProgramItem } from '@/types';
-import { categoryMeta } from './categories';
+import { EventTypeLabel } from './EventTypeLabel';
 
 export function ProgramItemCard({ item }: { item: ProgramItem }) {
-  const category = categoryMeta[item.category];
   return (
     <li className="grid grid-cols-[3rem_1rem_1fr] gap-x-2">
       <time className="pt-4 text-sm text-muted">{item.startTime}</time>
@@ -16,22 +16,24 @@ export function ProgramItemCard({ item }: { item: ProgramItem }) {
         <span className="absolute bottom-0 left-1/2 top-5 w-px -translate-x-1/2 bg-border" />
       </div>
 
-      <Card className="mb-4">
-        <p className={`text-xs font-bold uppercase ${category.className}`}>{category.label}</p>
-        <h3 className="mt-1 font-bold">{item.title}</h3>
-        <p className="mt-1 flex items-center gap-1.5 text-sm text-muted">
-          <MapPin size={14} />
-          {item.venueName}
-        </p>
-        <p className="mt-1 text-sm text-muted">{item.performersLabel}</p>
-        {item.performers.length > 0 && (
-          <div className="mt-3 flex gap-2">
-            {item.performers.map((p) => (
-              <Avatar key={p.id} name={p.name} src={p.avatarUrl} />
-            ))}
-          </div>
-        )}
-      </Card>
+      <Link to={`/program/${item.id}`} className="mb-4 block rounded-2xl">
+        <Card className="transition-colors hover:border-accent">
+          <EventTypeLabel type={item.type} />
+          <h3 className="mt-1 font-bold">{item.title}</h3>
+          <p className="mt-1 flex items-center gap-1.5 text-sm text-muted">
+            <MapPin size={14} />
+            {item.venueName}
+          </p>
+          <p className="mt-1 text-sm text-muted">{item.performersLabel}</p>
+          {item.performers.length > 0 && (
+            <div className="mt-3 flex gap-2">
+              {item.performers.map((p) => (
+                <Avatar key={p.id} name={p.name} src={p.avatarUrl} />
+              ))}
+            </div>
+          )}
+        </Card>
+      </Link>
     </li>
   );
 }

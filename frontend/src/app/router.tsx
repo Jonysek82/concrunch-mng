@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
 import { ProgramPage } from '@/features/program/ProgramPage';
+import { EventDetailPage } from '@/features/program/EventDetailPage';
 import { CatalogPage } from '@/features/catalog/CatalogPage';
 import { NewsPage } from '@/features/news/NewsPage';
 import { LoginPage } from '@/features/auth/LoginPage';
@@ -25,6 +26,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/program" replace /> },
       { path: 'program', element: <ProgramPage /> },
+      { path: 'program/:id', element: <EventDetailPage /> },
       { path: 'novinky', element: <NewsPage /> },
       { path: 'katalog', element: <CatalogPage /> },
       { path: 'prihlaseni', element: <LoginPage /> },
