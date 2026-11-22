@@ -2,6 +2,7 @@ const Event = require('../models/Event');
 const Performer = require('../models/Performer');
 const Tag = require('../models/Tag');
 const { isValidObjectId, dateTimeToValue } = require('../utils/validators');
+const { pickEventChanges, mergeEventSchedule, uniqueIds } = require('../utils/eventUpdate');
 
 const normalizeEventQuery = (query) => {
   const filters = { status: { $in: ['published', 'cancelled'] } };
@@ -73,23 +74,51 @@ const createEvent = async (req, res, next) => {
   }
 };
 
+// US4 Úprava/přesun akce – PUT /api/events/:id (i /api/admin/events/:id).
+// Organizátor nebo správce změní údaje akce, např. přesune ji na jiný den, čas nebo místo.
 const updateEvent = async (req, res, next) => {
   try {
     const { id } = req.params;
     if (!isValidObjectId(id)) return res.status(400).json({ message: 'Neplatné ID události' });
+
+    // Bereme jen pole z formuláře „Upravit akci“, ostatní se ignorují.
+    const changes = pickEventChanges(req.body);
+    if (Object.keys(changes).length === 0) {
+      return res.status(400).json({ message: 'Nebyly zadány žádné údaje ke změně' });
+    }
+
     const event = await Event.findById(id);
     if (!event) return res.status(404).json({ message: 'Událost nebyla nalezena' });
-    const nextData = { ...req.body, updatedBy: req.user._id };
-    if (nextData.day && nextData.startTime && nextData.endTime) {
-      const day = new Date(nextData.day);
-      if (!dateTimeToValue(day, nextData.startTime, nextData.endTime)) {
-        return res.status(400).json({ message: 'Konec musí být později než začátek' });
+
+    // Konec musí být později než začátek – kontrolujeme výsledný stav (uložené údaje + změny),
+    // takže kontrola platí i při změně jen jednoho z časů.
+    const schedule = mergeEventSchedule(event, changes);
+    if (!dateTimeToValue(new Date(schedule.day), schedule.startTime, schedule.endTime)) {
+      return res.status(400).json({ message: 'Konec musí být později než začátek' });
+    }
+
+    // Přiřazení účinkující a tagy musí existovat.
+    if (changes.performerIds) {
+      changes.performerIds = uniqueIds(changes.performerIds);
+      const count = await Performer.countDocuments({ _id: { $in: changes.performerIds } });
+      if (count !== changes.performerIds.length) {
+        return res.status(400).json({ message: 'Některý z vybraných účinkujících neexistuje' });
       }
     }
-    Object.assign(event, nextData);
+    if (changes.tagIds) {
+      changes.tagIds = uniqueIds(changes.tagIds);
+      const count = await Tag.countDocuments({ _id: { $in: changes.tagIds } });
+      if (count !== changes.tagIds.length) {
+        return res.status(400).json({ message: 'Některý z vybraných tagů neexistuje' });
+      }
+    }
+
+    Object.assign(event, changes, { updatedBy: req.user._id });
     await event.save();
+    await event.populate(['performerIds', 'tagIds']);
     res.json(event);
   } catch (err) {
+    if (err.name === 'ValidationError' || err.name === 'CastError') return res.status(400).json({ message: err.message });
     next(err);
   }
 };
