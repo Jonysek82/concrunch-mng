@@ -1,5 +1,6 @@
 const { body, param, query, validationResult } = require('express-validator');
 const { ROLE_LIST } = require('./roles');
+const { EDITABLE_EVENT_STATUSES } = require('./eventUpdate');
 
 const handleValidation = (req, res, next) => {
   const errors = validationResult(req);
@@ -37,16 +38,19 @@ const eventRules = [
   body('tagIds').optional().isArray().withMessage('tagIds musí být pole')
 ];
 
+// US4 Úprava/přesun akce – všechna pole jsou nepovinná, posílá se jen to, co se mění.
 const updateEventRules = [
   body('title').optional().trim().notEmpty().withMessage('Název je povinný'),
   body('description').optional().notEmpty().withMessage('Popis je povinný'),
   body('day').optional().isISO8601().withMessage('Datum je povinné'),
-  body('startTime').optional().matches(/^\d{2}:\d{2}$/).withMessage('Začátek musí být ve formátu HH:MM'),
-  body('endTime').optional().matches(/^\d{2}:\d{2}$/).withMessage('Konec musí být ve formátu HH:MM'),
+  body('startTime').optional().matches(/^([01]\d|2[0-3]):[0-5]\d$/).withMessage('Začátek musí být ve formátu HH:MM'),
+  body('endTime').optional().matches(/^([01]\d|2[0-3]):[0-5]\d$/).withMessage('Konec musí být ve formátu HH:MM'),
   body('location').optional().trim().notEmpty().withMessage('Místo je povinné'),
-  body('status').optional().isIn(['draft','published','cancelled']).withMessage('Neplatný stav'),
+  body('status').optional().isIn(EDITABLE_EVENT_STATUSES).withMessage('Stav může být jen Koncept (draft) nebo Publikováno (published)'),
   body('performerIds').optional().isArray().withMessage('performerIds musí být pole'),
-  body('tagIds').optional().isArray().withMessage('tagIds musí být pole')
+  body('performerIds.*').custom((value) => isValidObjectId(value)).withMessage('Neplatné ID účinkujícího'),
+  body('tagIds').optional().isArray().withMessage('tagIds musí být pole'),
+  body('tagIds.*').custom((value) => isValidObjectId(value)).withMessage('Neplatné ID tagu')
 ];
 
 const newsRules = [
